@@ -81,7 +81,6 @@ def heatmap(x, y, **kwargs):
         1, 15, hspace=0.2, wspace=0.1)  # Setup a 1x10 grid
     # Use the left 14/15ths of the grid for the main plot
     ax = plt.subplot(plot_grid[:, :-1])
-    # plt.figure(figsize=(20, 20))
 
     marker = kwargs.get('marker', 's')
 
@@ -97,6 +96,7 @@ def heatmap(x, y, **kwargs):
         c=[value_to_color(v) for v in color],
         **kwargs_pass_on
     )
+
     ax.set_xticks([v for k, v in x_to_num.items()])
     ax.set_xticklabels([k for k in x_to_num], rotation=45,
                        horizontalalignment='right')
@@ -114,6 +114,8 @@ def heatmap(x, y, **kwargs):
 
     ax.set_xlabel(kwargs.get('xlabel', ''))
     ax.set_ylabel(kwargs.get('ylabel', ''))
+
+    plt.show()
 
     # Add color legend on the right side of the plot
     if color_min < color_max:
@@ -160,26 +162,13 @@ def corrplot(data, size_scale=500, marker='s'):
 
 app = Flask(__name__)
 
-
-@app.route("/")
-@cross_origin(origin='*', headers=['Content-Type', 'Authorization'])
-def hello_world(request):
-    if request.method == 'POST':
-        df = pd.read_csv(request.files.get('file'))
-        correlation = df.corr(method='pearson')
-        ix = correlation.sort_values(
-            correlation.columns[1], ascending=False).index
-        df_sorted = correlation.loc[:, ix]
-        # May need to figure the scale out automatically and the bottom and left margins
-        # based on the length of the column name
-        corrplot(df_sorted.corr(), size_scale=100, marker='s')
-        plt.gcf().subplots_adjust(bottom=0.25)
-        plt.gcf().subplots_adjust(left=0.25)
-        fig = plt.figure(1)
-        canvas = FigureCanvas(fig)
-        output = io.BytesIO()
-        canvas.print_png(output)
-        response = make_response(output.getvalue())
-        response.mimetype = 'image/png'
-        return response
-    return "Ok"
+df = pd.read_csv("data.csv")
+correlation = df.corr(method='pearson')
+ix = correlation.sort_values(
+    correlation.columns[1], ascending=False).index
+df_sorted = correlation.loc[:, ix]
+# May need to figure the scale out automatically and the bottom and left margins
+# based on the length of the column name
+corrplot(df_sorted.corr(), size_scale=100, marker='s')
+plt.gcf().subplots_adjust(bottom=0.25)
+plt.gcf().subplots_adjust(left=0.25)
